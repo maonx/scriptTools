@@ -1,26 +1,27 @@
 #!/usr/bin/env python3
 
-from watchdog.observers import Observer
-from watchdog.events import *
-import time
+import os, time
 import sys
-import imghdr
 
 import win32print
 import win32ui
 import win32con
 from PIL import Image, ImageWin
 
-class FileEventHandler(FileSystemEventHandler):
-    def __init__(self):
-        FileSystemEventHandler.__init__(self)
-
-    def on_created(self, event):
-        if event.is_directory:
-            print("directory created:{0}".format(event.src_path))
-        else:
-            print("file created:{0}".format(event.src_path))
-            print_image(event.src_path)
+def print_file(file_name):
+    #
+    # Print normal file which has a well-known type
+    # and associated with one application
+    #
+    win32api.ShellExecute (
+        0,
+        "printto",
+        filename,
+        '"%s"' % win32print.GetDefaultPrinter (),
+        ".",
+        0
+    )
+    pass
 
 def print_image(file_name):
     #
@@ -82,15 +83,20 @@ def print_image(file_name):
     except IOError:
         print("This file %s is not a image file!" % file_name)
 
+
+
+
 if __name__ == "__main__":
-    observer = Observer()
-    event_handler = FileEventHandler()
-    path = sys.argv[1] if len(sys.argv) > 1 else '.'
-    observer.schedule(event_handler, path, True)
-    observer.start()
+    path_to_watch = sys.argv[1] if len(sys.argv) > 1 else '.'
+    before = dict ([(f, None) for f in os.listdir (path_to_watch)])
     try:
         while True:
-            time.sleep(1)
+            time.sleep (1)
+            after = dict ([(f, None) for f in os.listdir (path_to_watch)])
+            added = [f for f in after if not f in before]
+            removed = [f for f in before if not f in after]
+            if added: print("Added: ", ", ".join (added))
+            if removed: print("Removed: ", ", ".join (removed))
+            before = after
     except KeyboardInterrupt:
-        observer.stop()
-    observer.join()
+        sys.exit(1)
