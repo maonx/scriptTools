@@ -1,0 +1,31 @@
+#+TITLE: 漫画下载脚本
+
+在线看漫画加载慢且不方便，写了一个爬虫将漫画全部下载下来，打包成 zip 文件，安卓手机
+使用 =perfect viewer= APP 使用上下滑动方式观看韩国漫画，体验完美。
+
+适配网站：https://www.mhzzz.xyz/
+
+本脚本在 Windows 10 Chrome 测试通过。
+因为无法破解 =sojsonv5= 的加密算法，目前使用 =Selenium webdriver= 模拟点击获取每一话的网址。
+
+## 使用前提
+- 安装 BeautifulSoup 模块
+- 安装 Selenium 模块
+- 安装 [[https://chromedriver.chromium.org/getting-started][Chrome webdriver]]
+
+## 使用方法
+获取要下载漫画的目录页网址：https://www.mhzzz.xyz/manhua/info/281.html
+#+begin_src cmd
+# 下载整个漫画
+python download-comic.py https://www.mhzzz.xyz/manhua/info/281.html
+
+# 从第 5 章节下载漫画
+python download-comic.py https://www.mhzzz.xyz/manhua/info/281.html 5
+
+# 从第 5 章节下载 10 章漫画
+python download-comic.py https://www.mhzzz.xyz/manhua/info/281.html 5 15
+#+end_src
+
+## 疑难杂症
+- 下载过程中有可能碰到“目标计算机拒绝”程序中断问题，除了设置好自动检测代理问题外
+  还是无法避免，只能说看运气，中断了就从中断的章节开始重新下载。
