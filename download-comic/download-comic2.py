@@ -8,23 +8,24 @@ from multiprocessing.pool import ThreadPool
 
 headers={"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.135 Safari/537.36"}
 
+DELETE_CHAR = '\:*?"<>|'
+
 def book_info(html_source):
     html = BeautifulSoup(html_source, features="lxml")
-    book_header = html.find(class_="book-header")
-    book_name = book_header.h1.contents[0]
-    host = 'https://www.mhzzz.xyz/'
-    img = book_header.p.img
-    icon_url = host + img['src']
+    # print(html)
+    book_header = html.find(class_="banner_detail_form")
+    book_name = book_header.h1.text
+    img = book_header.div.img
+    icon_url = img['src']
     return book_name,icon_url
 
 def get_chapter_images_url(html_source):
     html = BeautifulSoup(html_source, features="lxml")
-    p = html.find(id='imgList')
+    p = html.find(class_="comicpage")
     img_list = p.select('img')
-    host = 'https://www.mhzzz.xyz/'
     chapter_images_url = []
     for i in img_list:
-        url = host + i['src']
+        url = i['data-original']
         chapter_images_url.append(url)
     return chapter_images_url
 
@@ -74,37 +75,32 @@ def download_image_thread(url_list, out_dir, num_processes, remove_bad=False, As
     return image_list
 
 def main(url, chapter_start = 1, chapter_sum = 1000):
-    options = webdriver.ChromeOptions()
-    options.add_experimental_option('excludeSwitches', ['enable-logging'])
-    driver = webdriver.Chrome(options=options)
-    driver.get(url)
-    sleep(1)
-    alert = driver.switch_to_alert()
-    alert.accept()
-    items = driver.find_elements_by_xpath("//div[@id='chapter-list']/div/div/a")
-    book_name, icon_url = book_info(driver.page_source)
-    html = BeautifulSoup(driver.page_source, features="lxml")
-    list_items = html.find_all(class_="list-item")
+    r = requests.get(url)
+    book_name, icon_url = book_info(r.content)
+    html = BeautifulSoup(r.content, features="lxml")
+    detail_list = html.find(id="detail-list-select")
+    items = detail_list.select('a')
+
     if not os.path.exists(book_name):
         os.makedirs(book_name)
         temp = [icon_url]
         download_image(icon_url,temp,book_name)
 
-    items[chapter_start-1].click()
-
+    count = len(items)
+    if chapter_sum > count :
+        chapter_sum = count
     for i in range(chapter_start,chapter_sum+1):
-        try:
-            next_chapter = driver.find_element_by_link_text('下一話')
-        except:
-            break
-        chapter_dir = ('./%03d ' %  i) + list_items[i-1].a.div.div.text
+        chapter_dir = ('./%03d ' %  i) + items[i-1].text
+        for j in DELETE_CHAR:
+            if chapter_dir.find(j) != -1:
+                chapter_dir = chapter_dir.replace(j, '')
         chapter_dir = os.path.join(book_name,chapter_dir)
         if not os.path.exists(chapter_dir):
             os.makedirs(chapter_dir)
-        chapter_images_url = get_chapter_images_url(driver.page_source)        
+        url2 = "http://www.92hm.top" + items[i-1]['href']
+        page_source = requests.get(url2)
+        chapter_images_url = get_chapter_images_url(page_source.content)
         image_list = download_image_thread(chapter_images_url, out_dir=chapter_dir, num_processes=8, remove_bad=True, Async=True)
-        next_chapter.click()
-    driver.quit()
 
 if __name__ == "__main__":
     MAX_CHAPTER_NUM = 1000
