@@ -73,6 +73,30 @@ def download_image_thread(url_list, out_dir, num_processes, remove_bad=False, As
         image_list = [i for i in image_list if i is not None]
     return image_list
 
+def get_chapter_url(url, chapter_start = 1, chapter_sum = 1000):
+    options = webdriver.ChromeOptions()
+    options.add_experimental_option('excludeSwitches', ['enable-logging'])
+    driver = webdriver.Chrome(options=options)
+    driver.get(url)
+    sleep(1)
+    alert = driver.switch_to_alert()
+    alert.accept()
+    items = driver.find_elements_by_xpath("//div[@id='chapter-list']/div/div/a")
+    items[chapter_start-1].click()
+    driver.set_page_load_timeout(3)
+    for i in range(chapter_start,chapter_sum+1):
+        try:
+            next_chapter = driver.find_element_by_link_text('下一話')
+        except:
+            break
+        try:
+            next_chapter.click()
+        except :
+            pass
+        print(driver.current_url)
+        # chapter_images_url = get_chapter_images_url(driver.page_source)        
+    driver.quit()
+
 def main(url, chapter_start = 1, chapter_sum = 1000):
     options = webdriver.ChromeOptions()
     options.add_experimental_option('excludeSwitches', ['enable-logging'])
@@ -107,12 +131,13 @@ def main(url, chapter_start = 1, chapter_sum = 1000):
     driver.quit()
 
 if __name__ == "__main__":
-    MAX_CHAPTER_NUM = 1000
-    if len(sys.argv) == 1:
-        print("usage:download-comic.py URL [chapter_sum] [start_chapter_num]")
-    else :
-        chapter_sum = MAX_CHAPTER_NUM
-        chapter_start = 1
-        if len(sys.argv) == 3 : chapter_start = int(sys.argv[2])
-        if len(sys.argv) == 4 : chapter_sum = int(sys.argv[3])
-        main(sys.argv[1],chapter_start,chapter_sum)
+    get_chapter_url(sys.argv[1])
+    # MAX_CHAPTER_NUM = 1000
+    # if len(sys.argv) == 1:
+    #     print("usage:download-comic.py URL [chapter_sum] [start_chapter_num]")
+    # else :
+    #     chapter_sum = MAX_CHAPTER_NUM
+    #     chapter_start = 1
+    #     if len(sys.argv) == 3 : chapter_start = int(sys.argv[2])
+    #     if len(sys.argv) == 4 : chapter_sum = int(sys.argv[3])
+    #     main(sys.argv[1],chapter_start,chapter_sum)
