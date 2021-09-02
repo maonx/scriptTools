@@ -75,6 +75,11 @@ def download_image_thread(url_list, out_dir, num_processes, remove_bad=False, As
 
 def get_chapter_url(url, chapter_start = 0, chapter_sum = 1000):
     options = webdriver.ChromeOptions()
+    # 不加载图片，加速网址获取
+    prefs = {"profile.managed_default_content_settings.images":2}
+    options.add_experimental_option("prefs",prefs)
+
+    # 不显示logging
     options.add_experimental_option('excludeSwitches', ['enable-logging'])
     driver = webdriver.Chrome(options=options)
     driver.get(url)
@@ -83,23 +88,16 @@ def get_chapter_url(url, chapter_start = 0, chapter_sum = 1000):
     alert.accept()
     items = driver.find_elements_by_xpath("//div[@id='chapter-list']/div/div/a")
     items[chapter_start].click()
-    driver.set_page_load_timeout(2)
     chapter_url_list = []
     for i in range(chapter_sum):
-        sleep(2)
         try:
             next_chapter = driver.find_element_by_link_text('下一話')
         except:
             break
-        if (len(chapter_url_list) == 0) or (chapter_url_list[i-1] != driver.current_url):
-            chapter_url_list.append(driver.current_url)
-            print(driver.current_url)
-        try:
-            next_chapter.click()
-        except :
-            pass
-        # chapter_images_url = get_chapter_images_url(driver.page_source)        
+        chapter_url_list.append(driver.current_url)
+        next_chapter.click()
     driver.quit()
+    return chapter_url_list
 
 def main(url, chapter_start = 1, chapter_sum = 1000):
     options = webdriver.ChromeOptions()
