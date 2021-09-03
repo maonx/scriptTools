@@ -1,2 +1,6 @@
-wechat/
-!wechat/chat.py
+wechat/download/
+wechat/itchat.pkl
+wechat/*.mp4
+wechat/*.png
+wechat/*.jpg
+wechat/*.gif
