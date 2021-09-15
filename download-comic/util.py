@@ -3,6 +3,14 @@ import requests
 
 headers={"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.135 Safari/537.36"}
 
+def del_char(str):
+    # 删除文件名中无法命名的字符
+    DELETE_CHAR = '\:*?"<>|'
+    for i in DELETE_CHAR:
+        if str.find(i) != -1:
+            str = str.replace(i,'')
+    return str
+
 def download_image(url, image_name):
     if not os.path.exists(image_name):
         r = requests.get(url,headers=headers)
@@ -35,14 +43,14 @@ def download_image_thread(url_list, out_dir, num_processes, remove_bad=False, As
     pool.close()
     pool.join()
     # 获取输出结果
-    image_list = []
-    if Async:
-        for p in thread_list:
-            image = p.get()  # get会阻塞
-            image_list.append(image)
-    else:
-        image_list = thread_list
-    if remove_bad:
-        image_list = [i for i in image_list if i is not None]
-    return image_list
+    # image_list = []
+    # if Async:
+    #     for p in thread_list:
+    #         image = p.get()  # get会阻塞
+    #         image_list.append(image)
+    # else:
+    #     image_list = thread_list
+    # if remove_bad:
+    #     image_list = [i for i in image_list if i is not None]
+    # return image_list
 
