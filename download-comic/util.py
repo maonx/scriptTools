@@ -1,3 +1,5 @@
+import threading
+from multiprocessing.pool import ThreadPool
 import os
 import requests
 
@@ -34,10 +36,12 @@ def download_image_thread(url_list, out_dir, num_processes, remove_bad=False, As
     pool = ThreadPool(processes=num_processes)
     thread_list = []
     for image_url in url_list:
+        index = url_list.index(image_url) + 1
+        in_dir = os.path.join(out_dir, ('%03d.jpg' % index))
         if Async:
-            out = pool.apply_async(func=download_image, args=(image_url, url_list, out_dir))  # 异步
+            out = pool.apply_async(func=download_image, args=(image_url, in_dir))  # 异步
         else:
-            out = pool.apply(func=download_image, args=(image_url, url_list))  # 同步
+            out = pool.apply(func=download_image, args=(image_url, in_dir))  # 同步
         thread_list.append(out)
  
     pool.close()

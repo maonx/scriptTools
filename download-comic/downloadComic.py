@@ -9,16 +9,23 @@ def main(url, chapter_start, chapter_sum):
     html = BeautifulSoup(r.content, features="lxml")
     book_name,icon_url = book_info(html)
     url_list, title_list = get_chapters(html)
+    if chapter_sum > len(title_list):
+        chapter_sum = len(title_list)
     # print(title_list)
     for i in range(chapter_start-1, chapter_start + chapter_sum -1):
-        chapter_dir = os.path.join(book_name, title_list[i])
+        chapter_dir = ('%03d ' % (i+1)) + title_list[i]
+        chapter_dir = os.path.join(book_name, chapter_dir)
+        if not os.path.exists(chapter_dir):
+            os.makedirs(chapter_dir)
+        chapter_images_url = get_chapter_images_url(url_list[i])
+        download_image_thread(chapter_images_url, chapter_dir, 4)
 
 
 
 if __name__ == '__main__':
     MAX_CHAPTER_NUM = 1000
     if len(sys.argv) == 1:
-        print("usage:download-comic.py URL [chapter_sum] [start_chapter_num]")
+        print("usage:download-comic.py URL [chapter_start_number] [download_chapter_sum]")
     else :
         url = sys.argv[1]
         if 'hm.top/' in url:

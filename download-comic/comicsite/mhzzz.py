@@ -8,8 +8,7 @@ from multiprocessing.pool import ThreadPool
 
 headers={"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.135 Safari/537.36"}
 
-def book_info(html_source):
-    html = BeautifulSoup(html_source, features="lxml")
+def book_info(html):
     book_header = html.find(class_="book-header")
     book_name = book_header.h1.contents[0]
     host = 'https://www.mhzzz.xyz/'
@@ -17,8 +16,9 @@ def book_info(html_source):
     icon_url = host + img['src']
     return book_name,icon_url
 
-def get_chapter_images_url(html_source):
-    html = BeautifulSoup(html_source, features="lxml")
+def get_chapter_images_url(url):
+    r = requests.get(url)
+    html = BeautifulSoup(r.content, features="lxml")
     p = html.find(id='imgList')
     img_list = p.select('img')
     host = 'https://www.mhzzz.xyz/'
@@ -28,52 +28,7 @@ def get_chapter_images_url(html_source):
         chapter_images_url.append(url)
     return chapter_images_url
 
-def download_image(url, url_list, out_dir):
-    image_name = "%03d.jpg" % (url_list.index(url) + 1)
-    image_name = os.path.join(out_dir, image_name)
-    if not os.path.exists(image_name):
-        r = requests.get(url,headers=headers)
-        with open(image_name, 'wb') as f:
-            f.write(r.content)    
-        print("download image successfully:{}".format(image_name))
-
-def download_image_thread(url_list, out_dir, num_processes, remove_bad=False, Async=True):
-    '''
-    多线程下载图片
-    :param url_list: image url list
-    :param out_dir:  保存图片的路径
-    :param num_processes: 开启线程个数
-    :param remove_bad: 是否去除下载失败的数据
-    :param Async:是否异步
-    :return: 返回图片的存储地址列表
-    '''
-    # 开启多线程
-    if not os.path.exists(out_dir):
-        os.makedirs(out_dir)
-    pool = ThreadPool(processes=num_processes)
-    thread_list = []
-    for image_url in url_list:
-        if Async:
-            out = pool.apply_async(func=download_image, args=(image_url, url_list, out_dir))  # 异步
-        else:
-            out = pool.apply(func=download_image, args=(image_url, url_list))  # 同步
-        thread_list.append(out)
- 
-    pool.close()
-    pool.join()
-    # 获取输出结果
-    image_list = []
-    if Async:
-        for p in thread_list:
-            image = p.get()  # get会阻塞
-            image_list.append(image)
-    else:
-        image_list = thread_list
-    if remove_bad:
-        image_list = [i for i in image_list if i is not None]
-    return image_list
-
-def get_chapter_url(url, chapter_start = 0, chapter_sum = 1000):
+def get_chapters(url, chapter_start = 0, chapter_sum = 1000):
     options = webdriver.ChromeOptions()
     # 不加载图片，加速网址获取
     prefs = {"profile.managed_default_content_settings.images":2}
