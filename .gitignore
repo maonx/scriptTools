@@ -4,3 +4,5 @@ wechat/*.mp4
 wechat/*.png
 wechat/*.jpg
 wechat/*.gif
+*/__pycache__
+__pycache__
