@@ -4,18 +4,21 @@
 使用 =perfect viewer= APP 使用上下滑动方式观看韩国漫画，体验完美。
 
 适配网站1：https://www.92hm.top/ (优先推荐，因为不需要用到 Selenium 模块)
+
 适配网站2：https://www.mhzzz.xyz/
 
 本脚本在 Windows 10 Chrome 测试通过。
 因为无法破解 =sojsonv5= 的加密算法，目前使用 =Selenium webdriver= 模拟点击获取每一话的网址。
 
 ** 使用前提
+- 安装 Python 3
 - 安装 BeautifulSoup 模块
 - 安装 Selenium 模块 (需要下载适配网站2时安装)
 - 安装 [[https://chromedriver.chromium.org/getting-started][Chrome webdriver]]
 
 ** 使用方法
 获取要下载漫画的目录页网址：https://www.mhzzz.xyz/manhua/info/281.html
+
 获取要下载漫画的目录页网址：http://www.92hm.top/book/415
 #+begin_src cmd
 # 下载整个漫画
