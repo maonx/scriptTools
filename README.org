@@ -1,13 +1,4 @@
-# 自用脚本工具
+* 自用脚本工具
 
-# print_image.py
-本脚本用来监控指定目录下的图片文件，自动调用默认打印机实现后台打印。
-此脚本在 Windows10 64位系统上测试通过。
-=print_image.exe= 为打包好的执行文件。
-
-## 使用方法
-#+begin_example
-python print_image.py path_to_print
-#+end_example
-=path_to_print= 为你要监控的目录，默认为空的话监控当前目录。
-懒人方法可以下载 =print_image.exe= 文件放在要监控的目录，双击运行即可。
+- [[./print_image][自动监控打印文件夹图片]]
+- [[./download_comic][漫画下载爬虫脚本]]
